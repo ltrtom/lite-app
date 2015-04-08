@@ -1,0 +1,9 @@
+# routing file like PlayFramework!
+
+##<prefix> /api
+
+
+GET     /acme                       Acme::index
+GET     /acme/{id}                  Acme::show
+GET     /api/{param}                Acme::api
+
