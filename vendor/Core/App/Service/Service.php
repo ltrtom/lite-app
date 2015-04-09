@@ -15,9 +15,6 @@ class Service {
         $this->dependencies = $dependencies;
     }
 
-    public static function fromAnnotation($annotation) {
-       return new Service('name', '/vareded');
-    }
 
     /**
      * @return mixed
@@ -34,6 +31,40 @@ class Service {
     {
         return $this->class;
     }
+
+    public function getParameterDependencies() {
+
+        return $this->getSymbolDependencies('%');
+    }
+
+    public function getServiceDependencies() {
+
+        return $this->getSymbolDependencies('@');
+    }
+
+
+    private function getSymbolDependencies($char) {
+
+        return  array_filter($this->dependencies, function ($param) use ($char){
+            return 0 === strpos($param, $char);
+        });
+
+    }
+
+    /**
+     * @return array
+     */
+    public function getDependencies()
+    {
+        return $this->dependencies;
+    }
+
+
+
+    public function hasDependencies() {
+        return !empty($this->dependencies);
+    }
+
 
 
 

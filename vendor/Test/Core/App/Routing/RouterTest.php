@@ -1,6 +1,6 @@
 <?php
 
-namespace Core\App\Routing;
+namespace vendor\Test\Core\App\Routing;
 
 use vendor\Core\Routing\Router;
 
@@ -76,9 +76,11 @@ class RouterTest extends \PHPUnit_Framework_TestCase{
      * @expectedException \Exception
      */
     public function testMissingBrace(){
+
         $this->bootstrap([
             'GET /acme/{dede Acme::DEDED'
         ]);
+
     }
 
     /**

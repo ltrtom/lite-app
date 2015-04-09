@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: thomas
- * Date: 08/04/15
- * Time: 22:56
- */
 
 namespace vendor\Core\Exception;
 
@@ -26,3 +20,4 @@ class BaseException extends \Exception{
 
 
 }
+

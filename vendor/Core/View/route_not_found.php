@@ -3,6 +3,7 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title>Route not Found</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 </head>
 <body>
     <p>No route found for <strong><?= $pathInfo ?></strong></p>

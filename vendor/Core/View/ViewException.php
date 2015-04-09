@@ -3,4 +3,6 @@
 namespace vendor\Core\View;
 
 
-class ViewException extends \Exception {}
+use vendor\Core\Exception\BaseException;
+
+class ViewException extends BaseException {}

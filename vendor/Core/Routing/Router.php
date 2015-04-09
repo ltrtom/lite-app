@@ -7,7 +7,7 @@ use vendor\Core\App\Http\Util\Sanitizer;
 
 
 /**
- * @Service(name="router")
+ * @Service(name="router", arguments=['%ROUTES_FILE'])
  */
 class Router {
 
@@ -158,3 +158,4 @@ class Router {
 
 
 }
+

@@ -1,5 +1,12 @@
 <phpunit
         bootstrap="bootstrap.php"
-        colors="true"
-        >
+        colors="true">
+
+    <testsuites>
+        <testsuite name="Project Test Suite">
+            <directory>Core/*</directory>
+        </testsuite>
+    </testsuites>
+
+
 </phpunit>

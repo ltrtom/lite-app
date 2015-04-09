@@ -36,8 +36,8 @@ class ServiceContainer {
             throw new ServiceException("No service found for %s", $name);
         }
 
-        $class = $this->registered[$name]->getClass();
-        return $this->services[$name] = new $class;
+        return $this->instantiateService($name);
+
     }
 
     public function registerServices($internalServices=[]) {
@@ -75,11 +75,14 @@ class ServiceContainer {
         }
 
         $name = $matches[1];
-        $arguments = isset($matches[3]) ?: '';
+        $arguments = isset($matches[3]) ? $matches[3] : null;
         $dependencies = [];
 
         if ($arguments) {
             $dependencies = array_map(function($item) {
+                $item = trim($item);
+
+                // removing the quotes and double quotes
                 return trim($item, "\"'");
 
             }, explode(',', $arguments));
@@ -107,6 +110,63 @@ class ServiceContainer {
 
         $service = $this->createService($content, $clazz);
         $this->registered[$service->getName()] = $service;
+    }
+
+    private function instantiateService($name)
+    {
+        $service = $this->registered[$name];
+
+        $reflect = new \ReflectionClass($service->getClass());
+
+        if (!$service->hasDependencies()) {
+
+            return $this->services[$name] = $reflect->newInstance();
+        }
+
+        $args = [];
+
+        foreach($service->getDependencies() as $dependency) {
+
+            if (0 === strpos($dependency, '%'))     $args[] = $this->findParameter($dependency);
+            elseif (0 === strpos($dependency, '@')) $args[] = $this->findService($dependency, $service);
+            else throw new ServiceException('What is the argument "%s" in %s ?', $dependency, $service->getClass());
+
+        }
+
+        return $this->services[$name] = $reflect->newInstanceArgs($args);
+
+    }
+
+    private function findParameter($param) {
+        $param = substr($param, 1); // removing the '%'
+
+        if (!defined($param)) {
+            throw new ServiceException('%s is not defined as a PHP constant with defined() method', $param);
+        }
+
+        return constant($param);
+    }
+
+    private function findService($dependency, Service $service) {
+
+        $dependency = substr($dependency, 1); // removing the '@'
+
+        // look for a circular reference
+        foreach($service->getDependencies() as $dep) {
+            $serviceName = substr($dep, 1);
+
+            if (isset($this->registered[$serviceName])) {
+                foreach($this->registered[$serviceName]->getDependencies() as $mirrorDep) {
+
+                    if ($mirrorDep === '@'. $service->getName()) {
+                        throw new ServiceException("Circular reference between @%s and @%s", $service->getName(), $dependency);
+                    }
+                }
+            }
+        }
+
+
+        return $this->get($dependency);
     }
 
 

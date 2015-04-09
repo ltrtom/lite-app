@@ -3,13 +3,23 @@
 namespace vendor\Core\View;
 
 use vendor\Core\App\LiteApplication;
+use vendor\Core\Routing\Router;
 
 
 /**
- * @Service(name="view.renderer", arguments=['@router', '@app'])
+ * @Service(name="view.renderer", arguments=['@router'])
  */
 class ViewRenderer {
 
+    /**
+     * @var Router
+     */
+    private $router;
+
+    function __construct(Router $router)
+    {
+        $this->router = $router;
+    }
 
 
     public function render($templateFile, $controller = null, $vars = []) {
@@ -33,7 +43,7 @@ class ViewRenderer {
         else  $path = sprintf("%s/app/View/%s/%s.php", ROOT_DIR, $controller, $templateFile);
 
         if (!is_file($path)) {
-            throw new ViewException(sprintf("Resource view not found at %s", $path));
+            throw new ViewException("Resource view not found at %s", $path);
         }
         return $path;
     }

@@ -11,39 +11,22 @@ use vendor\Core\App\Http\Exception\HttpException;
 use vendor\Core\App\Http\Util\Sanitizer;
 use vendor\Core\App\Service\ServiceContainer;
 use vendor\Core\Routing\Router;
-use vendor\Core\View\ViewRenderer;
 
 class LiteApplication {
 
     const CTRL_CLASS = '\\vendor\\Core\\App\\Controller\\Controller';
 
     /**
-     *
-     * @var Router
-     */
-    private $router;
-
-    /**
-     * @var ViewRenderer
-     */
-    private $viewRenderer;
-
-    /**
      * @var ServiceContainer
      */
     private $serviceContainer;
 
-
     private $formatters = array();
 
 
-
     function __construct() {
-        $this->router           = new Router(ROUTES_FILE);
-        $this->viewRenderer     = new ViewRenderer($this);
         $this->serviceContainer = new ServiceContainer(SERVICES_FILE);
     }
-
 
     public function run(){
 
@@ -52,7 +35,6 @@ class LiteApplication {
         $this->registerServices();
 
         $this->runRouter();
-
     }
 
     /**
@@ -61,6 +43,9 @@ class LiteApplication {
      */
     private function runRouter() {
 
+        /** @var Router $router */
+        $router = $this->get('router');
+
         $pathInfo = Sanitizer::sanitize(
             isset($_SERVER['PATH_INFO'])
                 ? $_SERVER['PATH_INFO']
@@ -68,9 +53,9 @@ class LiteApplication {
         );
         $method = strtoupper($_SERVER['REQUEST_METHOD']);
 
-        $route = $this->router->match($pathInfo, $method);
+        $route = $router->match($pathInfo, $method);
 
-        if (null == $route) {
+        if (null === $route) {
             $this->noRouteFound($pathInfo, $method);
         } else {
             $this->callAction($route);
@@ -192,10 +177,10 @@ class LiteApplication {
 
     private function renderRoutes($pathInfo, $method){
 
-        echo $this->viewRenderer->render('/vendor/Core/View/route_not_found.php', null, [
+        echo $this->get('view.renderer')->render('/vendor/Core/View/route_not_found.php', null, [
             'pathInfo' => $pathInfo,
             'method'   => $method,
-            'routes'   => $this->router->getRoutes()
+            'routes'   => $this->get('router')->getRoutes()
         ]);
     }
 
@@ -229,10 +214,7 @@ class LiteApplication {
         $this->serviceContainer->registerServices([
             "vendor\\Core\\View\\ViewRenderer",
             "vendor\\Core\\Routing\\Router"
-
         ]);
-
-
 
     }
 

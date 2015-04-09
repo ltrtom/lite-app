@@ -2,28 +2,21 @@
 
 namespace app\Controller;
 
-
 use app\Service\AcmeService;
 
 class AcmeController extends BaseController{
 
-    private $acme;
-
-    public function init() {
-        $this->acme = ['foo'];
-    }
 
     public function indexAction() {
 
         return $this->render('index', [
-            'param' => $this->query->get('de')
+            'param' => $this->query->get('de'),
+            'id' => 'ded'
         ]);
     }
 
     public function showAction($id) {
 
-        /** @var AcmeService $service */
-        $service = $this->get('acme.service');
 
         return $this->render('index', [
             'id'    => $id,
@@ -37,5 +30,10 @@ class AcmeController extends BaseController{
         return $this->render('index', [
             'posts' => $this->getpost()
         ]);
+    }
+
+    public function init()
+    {
+        // TODO: Implement init() method.
     }
 }
