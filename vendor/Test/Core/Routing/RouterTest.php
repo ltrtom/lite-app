@@ -1,6 +1,6 @@
 <?php
 
-namespace vendor\Test\Core\App\Routing;
+namespace vendor\Test\Core\Routing;
 
 use vendor\Core\Routing\Router;
 
@@ -23,7 +23,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase{
 
     public static function setUpBeforeClass()
     {
-        self::$routeFile = dirname(__FILE__) . '/test_routes';
+        self::$routeFile = dirname(__FILE__) . '/test_routes.test';
     }
 
     public function testSimpleRoute() {
@@ -55,10 +55,11 @@ class RouterTest extends \PHPUnit_Framework_TestCase{
     public function testMatches()
     {
         $expected = [
-            '/acme' => true,
-            '/deoto' => false,
-            '' => false,
-            '/acme/dede' => true
+            '/acme'       => true,
+            '/deoto'      => false,
+            ''            => false,
+            '/acme/dede'  => true,
+            '/acme/de/de' => false
         ];
 
         foreach($expected as $pattern => $result) {

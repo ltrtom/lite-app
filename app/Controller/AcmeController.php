@@ -6,7 +6,6 @@ use app\Service\AcmeService;
 
 class AcmeController extends BaseController{
 
-
     public function indexAction() {
 
         return $this->render('index', [
@@ -17,10 +16,11 @@ class AcmeController extends BaseController{
 
     public function showAction($id) {
 
+        /** @var AcmeService $service */
+        $service = $this->get('acme.service');
 
         return $this->render('index', [
-            'id'    => $id,
-            'param' => 'ded'
+            'hello' => $service->getServiceFile()
         ]);
     }
 
@@ -34,6 +34,6 @@ class AcmeController extends BaseController{
 
     public function init()
     {
-        // TODO: Implement init() method.
+
     }
 }

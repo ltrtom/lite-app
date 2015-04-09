@@ -6,7 +6,6 @@
 </head>
 <body>
     <p>LiteApplication</p>
-    <p>param <?= $param ?></p>
-    <p>param <?= $id ?></p>
+    <p>service <?= $hello ?></p>
 </body>
 </html>

@@ -65,8 +65,6 @@ abstract class Controller {
         throw new BadRequestException($msg);
     }
 
-    protected function getArrayParam($key, $sep = ',', $default = []){}
-
     protected function isAjax(){}
 
     protected function getContent(){}
