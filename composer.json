@@ -1,0 +1,12 @@
+{
+    "name": "ltrtom/lite-app",
+    "description": "PHP LiteApplication with simple routing & services oriented",
+    "authors": [
+        {
+            "name": "Thomas LETELLIER",
+            "email": "ltrtom@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
