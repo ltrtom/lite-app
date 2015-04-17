@@ -133,6 +133,7 @@ class LiteApplication {
                 echo $formatter->format($response, $route);
             }
         }
+        echo $this->getWebDir();
     }
 
     /**
@@ -162,7 +163,7 @@ class LiteApplication {
     }
 
     private function findDefaultFormatter() {
-        $default = null;
+
         foreach ($this->formatters as $formatter) {
             if ($formatter->isDefault()) {
                 return $formatter;
@@ -215,6 +216,12 @@ class LiteApplication {
             "vendor\\Core\\View\\ViewRenderer",
             "vendor\\Core\\Routing\\Router"
         ]);
+
+    }
+
+    public function getWebDir() {
+
+        return dirname($_SERVER['SCRIPT_NAME']);
 
     }
 

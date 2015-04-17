@@ -6,6 +6,7 @@
 </head>
 <body>
     <p>LiteApplication</p>
+    <img src="/LiteApp/web/favicon.ico">
     <p>service <?= $hello ?></p>
 </body>
 </html>

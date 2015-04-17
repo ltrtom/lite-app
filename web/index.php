@@ -1,6 +1,6 @@
 <?php
-include 'config/config.php';
-include 'vendor/autoload.php';
+include '../config/config.php';
+include '../vendor/autoload.php';
 
 use vendor\Core\App\LiteApplication;
 

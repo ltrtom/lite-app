@@ -11,15 +11,19 @@ class FakeController extends Controller {
     }
 
     private function doSomething() {
-        $d = 'foo';
+
+        return [
+            'foo' => 'bar'
+        ];
+
     }
 
-    public function _notFound($msg = '')
+    public function getNotFound($msg = '')
     {
         parent::notFound($msg);
     }
 
-    public function _badRequest($msg = '')
+    public function getBadRequest($msg = '')
     {
         parent::badRequest($msg);
     }

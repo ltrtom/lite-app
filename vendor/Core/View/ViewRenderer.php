@@ -2,7 +2,7 @@
 
 namespace vendor\Core\View;
 
-use vendor\Core\App\LiteApplication;
+
 use vendor\Core\Routing\Router;
 
 
@@ -47,6 +47,17 @@ class ViewRenderer {
         }
         return $path;
     }
+
+    /**
+     * @return Router
+     */
+    public function getRouter()
+    {
+        return $this->router;
+    }
+
+
+
 
 
 

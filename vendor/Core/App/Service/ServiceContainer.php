@@ -7,7 +7,6 @@ class ServiceContainer {
 
     const REGEX_ANNOTATION = "/@Service\\(name=[',\"]([.\\w]+)[',\"](,\\s*arguments=\\[(.+)\\])?\\)/";
 
-    private $servicesFile;
 
 
     private $services = [];
@@ -17,10 +16,7 @@ class ServiceContainer {
      */
     private $registered = [];
 
-    function __construct($servicesFile)
-    {
-        $this->servicesFile = $servicesFile;
-    }
+    function __construct() {}
 
 
     /**

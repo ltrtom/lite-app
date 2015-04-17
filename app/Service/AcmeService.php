@@ -40,5 +40,9 @@ class AcmeService {
 
     }
 
+    public function getRouter() {
+        return $this->router;
+    }
+
 
 }

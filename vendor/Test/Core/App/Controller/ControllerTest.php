@@ -21,7 +21,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase{
      */
     public function testBadRequest()
     {
-        $this->controller->_badRequest();
+        $this->controller->getBadRequest();
     }
 
     /**
@@ -29,7 +29,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase{
      */
     public function testNotFound()
     {
-        $this->controller->_notFound();
+        $this->controller->getNotFound();
     }
 
 
