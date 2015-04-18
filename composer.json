@@ -1,5 +1,6 @@
 {
     "name": "ltrtom/lite-app",
+  "version": "0.1.0",
     "description": "PHP LiteApplication with simple routing & services oriented",
     "authors": [
         {
@@ -8,5 +9,6 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {}
+    "require": {},
+    "license": "MIT"
 }

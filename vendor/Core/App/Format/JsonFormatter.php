@@ -2,6 +2,7 @@
 
 namespace vendor\Core\App\Format;
 
+use vendor\Core\App\Format\FormatterInterface;
 
 class JsonFormatter implements FormatterInterface{
 

@@ -2,6 +2,7 @@
 
 namespace app\Service;
 use vendor\Core\Routing\Router;
+use vendor\Core\App\Service\Service;
 
 /**
  * @Service(name="acme.service", arguments=['@router', '%SERVICES_FILE'])

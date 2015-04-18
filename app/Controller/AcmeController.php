@@ -26,10 +26,11 @@ class AcmeController extends BaseController{
 
 
     public function apiAction($param) {
-
-        return $this->render('index', [
-            'posts' => $this->getpost()
-        ]);
+        return [
+            'posts' => ['dede', 'foo', 'bar'],
+            'param' => $param,
+            'query' => $this->query->all()
+        ];
     }
 
     public function init()

@@ -21,11 +21,18 @@ class LiteApplication {
      */
     private $serviceContainer;
 
+    /**
+     * @var string
+     */
+    private $webDir;
+
     private $formatters = array();
 
 
     function __construct() {
         $this->serviceContainer = new ServiceContainer(SERVICES_FILE);
+
+        $this->bootstrap();
     }
 
     public function run(){
@@ -133,7 +140,6 @@ class LiteApplication {
                 echo $formatter->format($response, $route);
             }
         }
-        echo $this->getWebDir();
     }
 
     /**
@@ -221,8 +227,14 @@ class LiteApplication {
 
     public function getWebDir() {
 
-        return dirname($_SERVER['SCRIPT_NAME']);
+        return array_key_exists('SCRIPT_NAME', $_SERVER)
+            ?  $_SERVER['SCRIPT_NAME']
+            : null;
 
+    }
+
+    private function bootstrap() {
+        $this->webDir = $this->getWebDir();
     }
 
 }
