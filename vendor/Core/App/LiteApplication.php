@@ -8,23 +8,28 @@ use vendor\Core\App\Format\JsonFormatter;
 use vendor\Core\App\Format\XmlFormatter;
 use vendor\Core\App\Http\Codes;
 use vendor\Core\App\Http\Exception\HttpException;
+use vendor\Core\App\Http\Exception\UnauthorizedException;
+use vendor\Core\App\Http\Request;
 use vendor\Core\App\Http\Util\Sanitizer;
+use vendor\Core\App\Security\Secured;
+use vendor\Core\App\Security\SecuredInterface;
+use vendor\Core\App\Security\SecurityException;
+use vendor\Core\App\Service\Service;
 use vendor\Core\App\Service\ServiceContainer;
+use vendor\Core\App\Service\ServiceException;
 use vendor\Core\Routing\Router;
 
 class LiteApplication {
 
     const CTRL_CLASS = '\\vendor\\Core\\App\\Controller\\Controller';
 
+    const ANNOT_SECURED = '#@Secured\("([^"]+)"\)#';
+
     /**
      * @var ServiceContainer
      */
     private $serviceContainer;
 
-    /**
-     * @var string
-     */
-    private $webDir;
 
     private $formatters = array();
 
@@ -32,10 +37,11 @@ class LiteApplication {
     function __construct() {
         $this->serviceContainer = new ServiceContainer(SERVICES_FILE);
 
-        $this->bootstrap();
     }
 
     public function run(){
+
+        $this->serviceContainer->registerRequest(Request::createFromGlobals());
 
         $this->initFormatters();
 
@@ -89,23 +95,29 @@ class LiteApplication {
         $controller = new $class;
         $action = $route['action'] . 'Action';
 
-        if (!method_exists($controller, $action)) {
-            throw new \Exception(sprintf("Method %s not found in %s", $action, $route['controller']));
-        }
-
-        if (!is_subclass_of($controller, self::CTRL_CLASS)){
-            throw new \Exception(sprintf("Class %s should extend of Controller class", $class));
-        }
-
-        $controller->setApp($this);
-        $controller->initBase();
-        $controller->init();
-
         try {
+
+            $this->checkClassAnnotations($class);
+
+            if (!method_exists($controller, $action)) {
+                throw new \Exception(sprintf("Method %s not found in %s", $action, $route['controller']));
+            }
+
+            if (!is_subclass_of($controller, self::CTRL_CLASS)) {
+                throw new \Exception(sprintf("Class %s should extend of Controller class", $class));
+            }
+
+            $this->checkMethodAnnotations($class, $action);
+
+            $controller->setApp($this);
+            $controller->initBase();
+            $controller->init();
+
             // finally call the action from Controller class
-            $response = call_user_func_array(array(
+            $response = call_user_func_array([
                 $controller,
-                $action),
+                $action
+            ],
                 array_values($route['params'])
             );
             $this->handleResponse($response, $route);
@@ -118,7 +130,7 @@ class LiteApplication {
         }
     }
 
-    private function handleResponse(&$response, $route){
+    private function handleResponse(&$response, $route) {
         if (empty ($response)){
             throw new \Exception('Response given is empty, forget to return some data ?');
         }
@@ -220,21 +232,55 @@ class LiteApplication {
 
         $this->serviceContainer->registerServices([
             "vendor\\Core\\View\\ViewRenderer",
-            "vendor\\Core\\Routing\\Router"
+            "vendor\\Core\\Routing\\Router",
+            "vendor\\Core\\App\\Session\\Session"
         ]);
+    }
+
+    private function checkClassAnnotations($class) {
+
+        $reflection = new \ReflectionClass($class);
+
+        $doc = $reflection->getDocComment();
+        $matches = [];
+
+        if (preg_match(static::ANNOT_SECURED, $doc, $matches)) $this->voteSecurity($matches[1]);
 
     }
 
-    public function getWebDir() {
+    private function checkMethodAnnotations($class, $action) {
 
-        return array_key_exists('SCRIPT_NAME', $_SERVER)
-            ?  $_SERVER['SCRIPT_NAME']
-            : null;
+        $reflection = new \ReflectionMethod($class, $action);
+        $doc = $reflection->getDocComment();
+        $matches = [];
 
+        if (preg_match(static::ANNOT_SECURED, $doc, $matches)) $this->voteSecurity($matches[1]);
     }
 
-    private function bootstrap() {
-        $this->webDir = $this->getWebDir();
-    }
 
+    /**
+     * @param $serviceName
+     * @throws SecurityException
+     * @throws UnauthorizedException
+     */
+    private function voteSecurity($serviceName) {
+        $service = null;
+        try {
+            $service = $this->serviceContainer->get($serviceName);
+        } catch (ServiceException $exc) {
+            throw new SecurityException("Unable to find the security service named '%s'", $serviceName);
+        }
+
+        if (!$service instanceof SecuredInterface) {
+            throw new SecurityException("Class %s should implement the SecuredInterface to be used", $service->getClass());
+        }
+
+        $vote = $service->vote($this->get('request'));
+
+        if (!is_bool($vote)) {
+            throw new SecurityException("The 'vote' method should return a boolean result, got %s", gettype($vote));
+        }
+
+        if (false === $vote) throw new UnauthorizedException('Access Denied');
+    }
 }

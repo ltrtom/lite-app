@@ -4,6 +4,7 @@ namespace vendor\Core\View;
 
 
 use vendor\Core\Routing\Router;
+use vendor\Core\App\Service\Service;
 
 
 /**
@@ -11,21 +12,22 @@ use vendor\Core\Routing\Router;
  */
 class ViewRenderer {
 
+
     /**
-     * @var Router
+     * @var ViewBag
      */
-    private $router;
+    private $viewBag;
 
     function __construct(Router $router)
     {
-        $this->router = $router;
+        $this->viewBag = new ViewBag($router);
     }
-
 
     public function render($templateFile, $controller = null, $vars = []) {
         $path = $this->findFile($controller, $templateFile);
 
-        extract($vars);
+
+        extract(array_merge($vars, ['viewBag' => $this->viewBag]));
 
         ob_start();
         include $path;
@@ -47,17 +49,6 @@ class ViewRenderer {
         }
         return $path;
     }
-
-    /**
-     * @return Router
-     */
-    public function getRouter()
-    {
-        return $this->router;
-    }
-
-
-
 
 
 

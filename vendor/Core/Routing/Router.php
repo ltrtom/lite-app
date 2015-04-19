@@ -4,7 +4,7 @@ namespace vendor\Core\Routing;
 
 
 use vendor\Core\App\Http\Util\Sanitizer;
-
+use vendor\Core\App\Service\Service;
 
 /**
  * @Service(name="router", arguments=['%ROUTES_FILE'])
@@ -47,7 +47,7 @@ class Router {
     private function read() {
 
         if (!is_file($this->routeFile)){
-            throw new \Exception(sprintf("Unable to find the routes file at '%s' ", $this->routeFile));
+            throw new RouteException("Unable to find the routes file at '%s' ", $this->routeFile);
         }
 
         $lines = file($this->routeFile);
@@ -65,12 +65,12 @@ class Router {
 
             $split = preg_split('/\s+/', $line);
             if (count($split) != 3) { // should be 'GET /traders  Trader::findAll()'
-                throw new \Exception(sprintf("Routes file is not compliant: expect 3 values. got %s", $line));
+                throw new RouteException("Routes file is not compliant: expect 3 values. got %s", $line);
             }
 
             $route = array(
                 'method' => $split[0],
-                'routes' => ($this->prefix !== null) ? $this->prefix . $split[1] : $split[1],
+                'route' => ($this->prefix !== null) ? $this->prefix . $split[1] : $split[1],
                 'regex' => '',
                 'controller' => '',
                 'action' => '',
@@ -78,7 +78,7 @@ class Router {
             );
 
             if (false === strpos($split[2], '::')){
-                throw new \Exception(sprintf("Routes file is not compliant: Controller part should be Controller::action"));
+                throw new RouteException("Routes file is not compliant: Controller part should be Controller::action");
             }
 
             list($controller, $action) = explode('::', $split[2]);
@@ -87,7 +87,7 @@ class Router {
             $route['action'] = $action;
 
 
-            list($reg, $params) = $this->buildRegex($route['routes']);
+            list($reg, $params) = $this->buildRegex($route['route']);
             $route['regex']  = $reg;
             $route['params'] = $params;
 
@@ -111,7 +111,7 @@ class Router {
 
             $nextBrace = strpos($route, '}', $pos);
             if (false === $nextBrace){
-                throw new \Exception(sprintf("Missing closing brace '}'in routes", $route));
+                throw new RouteException("Missing closing brace '}'in routes", $route);
             }
 
             $param = substr($route, $pos, ($nextBrace - $pos) + 1);
@@ -155,6 +155,71 @@ class Router {
     public function getPrefix() {
         return $this->prefix;
     }
+
+    public function findRouteByControllerAction($controllerAction) {
+
+        foreach($this->routes as $route) {
+
+            // looking for 'Acme::index'
+            if ($controllerAction === sprintf("%s::%s", $route['controller'], $route['action'])) {
+                return $route;
+            }
+
+        }
+
+        return null;
+    }
+
+    public function generate($controllerAction, array $params = [], $isAbsolute = false) {
+
+        $route = $this->findRouteByControllerAction($controllerAction);
+
+        if (!$route) throw new RouteException("Route not found for '%s'", $controllerAction);
+        $url = $route['route'];
+
+        // something like '/acme/{id}'
+        if (!empty($route['params'])) {
+
+            $keys = array_keys($route['params']);
+
+            foreach($keys as $key) {
+                if (!isset($params[$key])) throw new RouteException("Missing key '%s' to generate route %s", $key, $controllerAction);
+
+                $value = $params[$key];
+
+                if (!is_string($value)) throw new \InvalidArgumentException(sprintf("Expected string value to generate url, got %s", gettype($value)));
+
+                $url = str_replace(sprintf("{%s}", $key), $value, $url);
+
+                // remove the route param
+                unset($params[$key]);
+            }
+        }
+
+        if (!empty($params)) {
+            $url .= '?'.http_build_query($params);
+        }
+
+
+        if ($isAbsolute) {
+            $url = $this->getBasePath() . $url;
+        }
+
+        return $url;
+
+    }
+
+    public function getBasePath() {
+
+        return sprintf("%s://%s%s%s",
+            $_SERVER['REQUEST_SCHEME'],
+            $_SERVER['SERVER_NAME'],
+            '80' === (string) $_SERVER['SERVER_PORT'] ? '' : ':'.$_SERVER['SERVER_PORT'],
+            !empty($_SERVER['REQUEST_URI']) ? dirname($_SERVER['REQUEST_URI']) : ''
+            );
+
+    }
+
 
 
 }

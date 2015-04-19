@@ -5,6 +5,7 @@ namespace vendor\Core\App\Controller;
 use vendor\Core\App\Http\Exception\BadRequestException;
 use vendor\Core\App\Http\Exception\NotFoundException;
 use vendor\Core\App\Http\ParameterBag;
+use vendor\Core\App\Http\Request;
 use vendor\Core\App\LiteApplication;
 use vendor\Core\View\ViewRenderer;
 
@@ -14,17 +15,6 @@ abstract class Controller {
      * @var LiteApplication
      */
     private $app;
-
-    /**
-     * @var ParameterBag
-     */
-    protected $query;
-
-    /**
-     * @var ParameterBag
-     */
-    protected $request;
-
 
     protected function render($resource, $vars = []) {
         /** @var ViewRenderer $viewRendered */
@@ -43,20 +33,16 @@ abstract class Controller {
     public abstract function init();
 
     public final function initBase(){
-        $this->sanitizeGlobals();
-    }
-
-    private function sanitizeGlobals() {
-
-        $this->query   = new ParameterBag($_GET);
-        $this->request = new ParameterBag($_POST);
-
     }
 
     public function setApp(LiteApplication $app) {
         $this->app = $app;
     }
 
+    /**
+     * @param string $msg
+     * @throws NotFoundException
+     */
     protected function notFound($msg = '') {
         throw new NotFoundException($msg);
     }
@@ -81,5 +67,20 @@ abstract class Controller {
         return $this->app->get($name);
     }
 
+    /**
+     * @return Request
+     */
+    protected function getRequest() {
+        return $this->get('request');
+    }
+
+    protected function getBearer() {
+
+        $token = $this->getRequest()->getBearer();
+
+        if (null === $token) $this->badRequest("'Authorization' has not been found the in the request headers");
+
+        return $token;
+    }
 
 }

@@ -3,6 +3,8 @@
 namespace vendor\Core\App\Service;
 
 
+use vendor\Core\App\Http\Request;
+
 class ServiceContainer {
 
     const REGEX_ANNOTATION = "/@Service\\(name=[',\"]([.\\w]+)[',\"](,\\s*arguments=\\[(.+)\\])?\\)/";
@@ -39,14 +41,10 @@ class ServiceContainer {
     public function registerServices($internalServices=[]) {
 
         if (!is_file(SERVICES_FILE)) return;
-        $services = [];
+        $services = require SERVICES_FILE;
 
-        require SERVICES_FILE;
 
-        if (!get_defined_vars()['services']) throw new ServiceException('Services variables must be available in %s', SERVICES_FILE);
-
-        if (!is_array($services)) throw new ServiceException('services variables should be array, got %s', gettype($services));
-
+        if (!$services || !is_array($services)) throw new ServiceException('services variables should be array, got %s', gettype($services));
 
         $services = array_merge($services, $internalServices);
 
@@ -106,6 +104,10 @@ class ServiceContainer {
 
         $service = $this->createService($content, $clazz);
         $this->registered[$service->getName()] = $service;
+    }
+
+    public function registerRequest(Request $request) {
+        $this->services['request'] = $request;
     }
 
     private function instantiateService($name)

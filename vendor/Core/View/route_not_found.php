@@ -18,12 +18,15 @@
             <?php foreach($routes as $route): ?>
                 <tr>
                     <td><?= $route['method'] ?></td>
-                    <td><?= $route['routes'] ?></td>
+                    <td><?= $route['route'] ?></td>
                 </tr>
 
             <?php endforeach; ?>
         </tbody>
     </table>
+    <pre>
+
+    </pre>
 
 </body>
 </html>
