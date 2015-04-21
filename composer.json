@@ -1,14 +1,21 @@
 {
-    "name": "ltrtom/lite-app",
+  "name": "ltrtom/lite-app",
   "version": "0.1.0",
-    "description": "PHP LiteApplication with simple routing & services oriented",
-    "authors": [
-        {
-            "name": "Thomas LETELLIER",
-            "email": "ltrtom@gmail.com"
-        }
-    ],
-    "minimum-stability": "dev",
-    "require": {},
-    "license": "MIT"
+  "description": "PHP LiteApplication with simple routing & services oriented",
+  "authors": [
+    {
+      "name": "Thomas LETELLIER",
+      "email": "ltrtom@gmail.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "php": ">=5.4.0"
+  },
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "LiteApplication\\": "src/"
+    }
+  }
 }

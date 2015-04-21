@@ -1,5 +1,5 @@
 # Created by .ignore support plugin (hsz.mobi)
-toto.php
 *.test
 .htaccess
-
+vendor
+cache

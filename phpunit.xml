@@ -1,0 +1,13 @@
+<phpunit
+        bootstrap="tests/bootstrap.php"
+        colors="true"
+        stopOnFailure="false"
+        >
+
+    <testsuites>
+        <testsuite name="LiteApplication Test Suite">
+            <directory>./tests/</directory>
+        </testsuite>
+    </testsuites>
+
+</phpunit>
