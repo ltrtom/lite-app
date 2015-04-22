@@ -7,19 +7,24 @@ use LiteApplication\Http\Routing\Router;
 use LiteApplication\Service\Service;
 
 /**
- * @Service(name="view.renderer", arguments=['@router'])
+ * @Service(name="view.renderer", arguments=['@router', '%root_dir'])
  */
 class ViewRenderer {
-
 
     /**
      * @var ViewBag
      */
     private $viewBag;
 
-    function __construct(Router $router)
-    {
+    /**
+     * @var string
+     */
+    private $rootDir;
+
+
+    function __construct(Router $router, $rootDir) {
         $this->viewBag = new ViewBag($router);
+        $this->rootDir = $rootDir;
     }
 
     public function render($templateFile, $controller = null, $vars = []) {
@@ -39,16 +44,14 @@ class ViewRenderer {
 
         // it means the path is absolute
         if (0 === strpos($templateFile, '/')) {
-            $path = ROOT_DIR . $templateFile;
+            $path = $this->rootDir . $templateFile;
         }
-        else  $path = sprintf("%s/app/View/%s/%s.php", ROOT_DIR, $controller, $templateFile);
+        else  $path = sprintf("%s/app/View/%s/%s.php", $this->rootDir, $controller, $templateFile);
 
         if (!is_file($path)) {
             throw new ViewException("Resource view not found at %s", $path);
         }
         return $path;
     }
-
-
 
 }

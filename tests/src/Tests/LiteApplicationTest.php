@@ -13,13 +13,12 @@ class LiteApplicationTest extends \PHPUnit_Framework_TestCase{
      */
     private $app;
 
-    public function testLite() {
-        $this->markTestSkipped();
+    public function testRun() {
 
     }
 
     protected function setUp() {
         $this->app = new LiteApplication();
-
     }
+
 }

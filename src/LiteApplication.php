@@ -15,14 +15,15 @@ use LiteApplication\Http\Routing\Router;
 use LiteApplication\Http\Util\Sanitizer;
 use LiteApplication\Security\Secured;
 use LiteApplication\Security\SecurityException;
+use LiteApplication\Security\SecurityHandler;
+use LiteApplication\Service\ParameterContainer;
 use LiteApplication\Service\ServiceContainer;
 use LiteApplication\Service\ServiceException;
 
-class LiteApplication {
+abstract class LiteApplication {
 
     const CTRL_CLASS = '\\vendor\\Core\\App\\Controller\\Controller';
 
-    const ANNOT_SECURED = '#@Secured\("([^"]+)"\)#';
 
     /**
      * @var ServiceContainer
@@ -30,13 +31,36 @@ class LiteApplication {
     private $serviceContainer;
 
 
+    /**
+     * @var ParameterContainer
+     */
+    private $parameterContainer;
+
+
+    /**
+     * @var SecurityHandler
+     */
+    private $securityHandler;
+
+
     private $formatters = array();
 
 
-    function __construct() {
-        $this->serviceContainer = new ServiceContainer(SERVICES_FILE);
+    private $rootDir;
 
+    function __construct() {
+
+            $this->rootDir = $this->guessRootDir();
+            $this->initContainers();
+            $this->securityHandler = new SecurityHandler($this->serviceContainer);
     }
+
+    private function initContainers() {
+        $this->parameterContainer = new ParameterContainer($this->rootDir);
+
+        $this->serviceContainer = new ServiceContainer($this->parameterContainer);
+    }
+
 
     public function run(){
 
@@ -230,10 +254,10 @@ class LiteApplication {
 
     private function registerServices() {
 
-        $this->serviceContainer->registerServices([
-            "vendor\\Core\\View\\ViewRenderer",
-            "vendor\\Core\\Routing\\Router",
-            "vendor\\Core\\App\\Session\\Session"
+        $this->serviceContainer->registerInternalServices([
+            "LiteApplication\\View\\ViewRenderer",
+            "LiteApplication\\Routing\\Router",
+            "LiteApplication\\Session\\Session"
         ]);
     }
 
@@ -244,7 +268,7 @@ class LiteApplication {
         $doc = $reflection->getDocComment();
         $matches = [];
 
-        if (preg_match(static::ANNOT_SECURED, $doc, $matches)) $this->voteSecurity($matches[1]);
+        if (preg_match(SecurityHandler::ANNOTATION_SECURED, $doc, $matches)) $this->securityHandler->handleVote($matches[1]);
 
     }
 
@@ -254,33 +278,17 @@ class LiteApplication {
         $doc = $reflection->getDocComment();
         $matches = [];
 
-        if (preg_match(static::ANNOT_SECURED, $doc, $matches)) $this->voteSecurity($matches[1]);
+        if (preg_match(SecurityHandler::ANNOTATION_SECURED, $doc, $matches)) $this->securityHandler->handleVote($matches[1]);
     }
 
 
-    /**
-     * @param $serviceName
-     * @throws SecurityException
-     * @throws UnauthorizedException
-     */
-    private function voteSecurity($serviceName) {
-        $service = null;
-        try {
-            $service = $this->serviceContainer->get($serviceName);
-        } catch (ServiceException $exc) {
-            throw new SecurityException("Unable to find the security service named '%s'", $serviceName);
-        }
+    private function guessRootDir() {
+        return $this->isCli()
+            ? $_SERVER['PWD']
+            :  readlink(dirname($_SERVER['PHP_SELF']));
+    }
 
-        if (!$service instanceof Secured) {
-            throw new SecurityException("Class %s should implement the SecuredInterface to be used", $service->getClass());
-        }
-
-        $vote = $service->vote($this->get('request'));
-
-        if (!is_bool($vote)) {
-            throw new SecurityException("The 'vote' method should return a boolean result, got %s", gettype($vote));
-        }
-
-        if (false === $vote) throw new UnauthorizedException('Access Denied');
+    private function isCli() {
+        return php_sapi_name() === 'cli';
     }
 }

@@ -11,12 +11,20 @@ class ServiceContainer {
 
     private $services = [];
 
+
+    /**
+     * @var ParameterContainer
+     */
+    private $parameterContainer;
+
     /**
      * @var Service[]
      */
     private $registered = [];
 
-    function __construct() {}
+    function __construct(ParameterContainer $container) {
+        $this->parameterContainer = $container;
+    }
 
 
     /**
@@ -36,15 +44,22 @@ class ServiceContainer {
 
     }
 
-    public function registerServices($internalServices=[]) {
 
-        if (!is_file(SERVICES_FILE)) return;
-        $services = require SERVICES_FILE;
+    public function registerInternalServices(array $classes) {
 
+        foreach ($classes as $class) {
+            $this->register($class);
+        }
+    }
+
+    public function registerServices($file) {
+
+        if (!is_file($file)) return;
+        $services = require $file;
 
         if (!$services || !is_array($services)) throw new ServiceException('services variables should be array, got %s', gettype($services));
 
-        $services = array_merge($services, $internalServices);
+        $services = array_merge($services);
 
         foreach($services as $clazz){
             $this->register($clazz);
@@ -95,8 +110,8 @@ class ServiceContainer {
 
         $class = str_replace('\\', '/', $clazz);
 
-        $file = ROOT_DIR.'/'.$class .'.php';
-        if (!is_file($file)) throw new ServiceException("Service %s not found", $class);
+        $file = $this->parameterContainer->get('src_root_dir').'/'.$class .'.php';
+        if (!is_file($file)) throw new ServiceException("Service %s not found in %s", $class, $file);
 
         $content = file_get_contents($file);
 
@@ -126,7 +141,6 @@ class ServiceContainer {
             if (0 === strpos($dependency, '%'))     $args[] = $this->findParameter($dependency);
             elseif (0 === strpos($dependency, '@')) $args[] = $this->findService($dependency, $service);
             else throw new ServiceException('What is the argument "%s" in %s ?', $dependency, $service->getClass());
-
         }
 
         return $this->services[$name] = $reflect->newInstanceArgs($args);
@@ -136,11 +150,11 @@ class ServiceContainer {
     private function findParameter($param) {
         $param = substr($param, 1); // removing the '%'
 
-        if (!defined($param)) {
-            throw new ServiceException('%s is not defined as a PHP constant with defined() method', $param);
+        if (!$this->parameterContainer->has($param)) {
+            throw new ServiceException("'%s' is not defined as a parameter", $param);
         }
 
-        return constant($param);
+        return $this->parameterContainer->get($param);
     }
 
     private function findService($dependency, Service $service) {
@@ -160,7 +174,6 @@ class ServiceContainer {
                 }
             }
         }
-
 
         return $this->get($dependency);
     }

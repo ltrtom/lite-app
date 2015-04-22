@@ -45,9 +45,7 @@ class Router {
 
     private function read() {
 
-        if (!is_file($this->routeFile)){
-            throw new RouteException("Unable to find the routes file at '%s' ", $this->routeFile);
-        }
+        if (!is_file($this->routeFile)) return;
 
         $lines = file($this->routeFile);
 
@@ -101,7 +99,7 @@ class Router {
         $regex  = '#^'. str_replace('/', '\/', $route). "\/?$#";
         $params = array();
 
-        // ex /traders
+        // /acme
         if (false === ($pos = strpos($route, '{'))){
             return array($regex, $params);
         }
@@ -198,7 +196,6 @@ class Router {
         if (!empty($params)) {
             $url .= '?'.http_build_query($params);
         }
-
 
         if ($isAbsolute) {
             $url = $this->getBasePath() . $url;
